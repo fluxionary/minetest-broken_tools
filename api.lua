@@ -2,6 +2,7 @@ local S = broken_tools.S
 local f = string.format
 
 function broken_tools.break_tool(itemstack)
+	assert(not itemstack:is_empty())
 	itemstack:set_wear(65535)
 	item_description_monoid.monoid:add_change(itemstack, minetest.colorize("#ff0000", S("BROKEN")), "broken_tool")
 	toolcap_monoids.dig_speed:add_change(itemstack, "disable", "broken_tool")
@@ -10,6 +11,7 @@ function broken_tools.break_tool(itemstack)
 end
 
 function broken_tools.fix_tool(itemstack)
+	assert(not itemstack:is_empty())
 	item_description_monoid.monoid:del_change(itemstack, "broken_tool")
 	toolcap_monoids.dig_speed:del_change(itemstack, "broken_tool")
 	toolcap_monoids.damage:del_change(itemstack, "broken_tool")

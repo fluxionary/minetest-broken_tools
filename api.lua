@@ -1,4 +1,4 @@
-local S = broken_tools.s
+local S = broken_tools.S
 local f = string.format
 
 function broken_tools.break_tool(itemstack)

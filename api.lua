@@ -39,16 +39,8 @@ function broken_tools.register(name)
 	if not def then
 		error(f("attempt to register unknown tool %s", name))
 	end
-	local on_use = def.on_use
 	local after_use = def.after_use
 	minetest.override_item(name, {
-		on_use = function(itemstack, user, pointed_thing)
-			if item_description_monoid.monoid:value(itemstack, "broken_tool") then
-				play_breaking_sound(itemstack, user:get_pos())
-			elseif on_use then
-				return on_use(itemstack, user, pointed_thing)
-			end
-		end,
 		after_use = function(itemstack, user, node, digparams)
 			local broken = false
 			if after_use then
@@ -73,3 +65,10 @@ function broken_tools.register(name)
 		end,
 	})
 end
+
+minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
+	local tool = puncher:get_wielded_item()
+	if item_description_monoid.monoid:value(tool, "broken_tool") then
+		play_breaking_sound(tool, puncher:get_pos())
+	end
+end)

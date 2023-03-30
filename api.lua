@@ -3,8 +3,8 @@ local f = string.format
 
 local function play_breaking_sound(tool, pos)
 	local definition = tool:get_definition()
-	local sound_breaks = (definition.sounds or {}).breaks
-	if sound_breaks and pos then
+	local sound_breaks = (definition.sound or {}).breaks or "default_tool_breaks"
+	if pos then
 		minetest.sound_play(sound_breaks, {
 			pos = pos,
 			gain = 0.5,

@@ -1,20 +1,37 @@
 local S = broken_tools.S
 local f = string.format
 
-function broken_tools.break_tool(itemstack)
-	assert(not itemstack:is_empty())
-	itemstack:set_wear(65535)
-	item_description_monoid.monoid:add_change(itemstack, minetest.colorize("#ff0000", S("BROKEN")), "broken_tool")
-	toolcap_monoids.dig_speed:add_change(itemstack, "disable", "broken_tool")
-	toolcap_monoids.damage:add_change(itemstack, "disable", "broken_tool")
-	return itemstack
+local function play_breaking_sound(tool, pos)
+	local definition = tool:get_definition()
+	local sound_breaks = (definition.sounds or {}).breaks
+	if sound_breaks and pos then
+		minetest.sound_play(sound_breaks, {
+			pos = pos,
+			gain = 0.5,
+		}, true)
+	end
 end
 
-function broken_tools.fix_tool(itemstack)
-	assert(not itemstack:is_empty())
-	item_description_monoid.monoid:del_change(itemstack, "broken_tool")
-	toolcap_monoids.dig_speed:del_change(itemstack, "broken_tool")
-	toolcap_monoids.damage:del_change(itemstack, "broken_tool")
+function broken_tools.break_tool(toolstack, pos)
+	assert(toolstack:is_known() and not toolstack:is_empty())
+	local definition = toolstack:get_definition()
+	assert(definition.type == "tool")
+	toolstack:set_wear(65535)
+	item_description_monoid.monoid:add_change(toolstack, minetest.colorize("#ff0000", S("BROKEN")), "broken_tool")
+	toolcap_monoids.dig_speed:add_change(toolstack, "disable", "broken_tool")
+	toolcap_monoids.damage:add_change(toolstack, "disable", "broken_tool")
+	play_breaking_sound(toolstack, pos)
+	return toolstack
+end
+
+function broken_tools.fix_tool(toolstack)
+	assert(toolstack:is_known() and not toolstack:is_empty())
+	local definition = toolstack:get_definition()
+	assert(definition.type == "tool")
+	item_description_monoid.monoid:del_change(toolstack, "broken_tool")
+	toolcap_monoids.dig_speed:del_change(toolstack, "broken_tool")
+	toolcap_monoids.damage:del_change(toolstack, "broken_tool")
+	return toolstack
 end
 
 function broken_tools.register(name)
@@ -22,8 +39,16 @@ function broken_tools.register(name)
 	if not def then
 		error(f("attempt to register unknown tool %s", name))
 	end
+	local on_use = def.on_use
 	local after_use = def.after_use
 	minetest.override_item(name, {
+		on_use = function(itemstack, user, pointed_thing)
+			if item_description_monoid.monoid:value(itemstack, "broken_tool") then
+				play_breaking_sound(itemstack, user:get_pos())
+			elseif on_use then
+				return on_use(itemstack, user, pointed_thing)
+			end
+		end,
 		after_use = function(itemstack, user, node, digparams)
 			local broken = false
 			if after_use then
@@ -39,7 +64,7 @@ function broken_tools.register(name)
 			local wear = itemstack:get_wear()
 			broken = broken or (65536 - wear) <= digparams.wear
 			if broken then
-				itemstack = broken_tools.break_tool(itemstack)
+				itemstack = broken_tools.break_tool(itemstack, user:get_pos())
 			else
 				itemstack:add_wear(digparams.wear)
 			end

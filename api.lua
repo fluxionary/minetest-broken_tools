@@ -1,26 +1,33 @@
 local S = broken_tools.S
 local f = string.format
 
-local function play_breaking_sound(tool, pos)
+local function play_breaking_sound(tool, user)
 	local definition = tool:get_definition()
 	local sound_breaks = (definition.sound or {}).breaks or "default_tool_breaks"
-	if pos then
-		minetest.sound_play(sound_breaks, {
-			pos = pos,
-			gain = 0.5,
-		}, true)
-	end
+
+	minetest.sound_play(sound_breaks, {
+		pos = user:get_pos(),
+		gain = 0.5,
+	}, true)
 end
 
-function broken_tools.break_tool(toolstack, pos)
+function broken_tools.break_tool(toolstack, user)
 	assert(toolstack:is_known() and not toolstack:is_empty())
 	local definition = toolstack:get_definition()
 	assert(definition.type == "tool")
+	local short_description = futil.get_safe_short_description(toolstack)
 	toolstack:set_wear(65535)
 	item_description_monoid.monoid:add_change(toolstack, minetest.colorize("#ff0000", S("BROKEN")), "broken_tool")
 	toolcap_monoids.dig_speed:add_change(toolstack, "disable", "broken_tool")
 	toolcap_monoids.damage:add_change(toolstack, "disable", "broken_tool")
-	play_breaking_sound(toolstack, pos)
+	if user then
+		play_breaking_sound(toolstack, user)
+		broken_tools.chat_send_player(
+			user,
+			"your @1 has broken! but it can be repaired on an anvil.",
+			short_description
+		)
+	end
 	return toolstack
 end
 
@@ -56,7 +63,7 @@ function broken_tools.register(name)
 			local wear = itemstack:get_wear()
 			broken = broken or (65536 - wear) <= digparams.wear
 			if broken then
-				itemstack = broken_tools.break_tool(itemstack, user:get_pos())
+				itemstack = broken_tools.break_tool(itemstack, user)
 			else
 				itemstack:add_wear(digparams.wear)
 			end
@@ -69,6 +76,6 @@ end
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 	local tool = puncher:get_wielded_item()
 	if item_description_monoid.monoid:value(tool, "broken_tool") then
-		play_breaking_sound(tool, puncher:get_pos())
+		play_breaking_sound(tool, puncher)
 	end
 end)

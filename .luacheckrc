@@ -651,6 +651,7 @@ stds.broken_tools = {
 	},
 	read_globals = {
 		"fmod",
+		"futil",
 		"item_description_monoid",
 		"item_monoids",
 		"toolcap_monoids",

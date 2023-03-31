@@ -46,8 +46,11 @@ function broken_tools.register(name)
 	if not def then
 		error(f("attempt to register unknown tool %s", name))
 	end
+	local groups = table.copy(def.groups or {})
+	groups.breakable_tool = 1
 	local after_use = def.after_use
 	minetest.override_item(name, {
+		groups = groups,
 		after_use = function(itemstack, user, node, digparams)
 			local broken = false
 			if after_use then

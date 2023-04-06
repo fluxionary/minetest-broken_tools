@@ -79,6 +79,10 @@ end
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 	local tool = puncher:get_wielded_item()
 	if item_description_monoid.monoid:value(tool, "broken_tool") then
-		play_breaking_sound(tool, puncher)
+		if tool:get_wear() == 65535 then
+			play_breaking_sound(tool, puncher)
+		else
+			broken_tools.fix_tool(tool)
+		end
 	end
 end)

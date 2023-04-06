@@ -7,5 +7,5 @@
     "repo": "https://github.com/fluxionary/minetest-broken_tools.git",
     "website": "https://github.com/fluxionary/minetest-broken_tools",
     "issue_tracker": "https://github.com/fluxionary/minetest-broken_tools/issues",
-    "short_description": "TODO: write a description"
+    "short_description": "when a tool breaks, instead of it disappearing, it turns into an unusable \"broken\" version."
 }

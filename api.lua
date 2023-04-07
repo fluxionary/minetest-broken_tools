@@ -17,12 +17,12 @@ function broken_tools.break_tool(toolstack, user)
 	assert(definition.type == "tool")
 	local short_description = futil.get_safe_short_description(toolstack)
 	toolstack:set_wear(65535)
-	item_description_monoid.description:add_change(toolstack, {
+	description_monoids.description:add_change(toolstack, {
 		prefix = S("BROKEN"),
 		colorize = "#FFFFFF",
 		bgcolor = "#FF0000",
 	}, "broken_tool")
-	item_description_monoid.short_description:add_change(toolstack, {
+	description_monoids.short_description:add_change(toolstack, {
 		prefix = S("BROKEN"),
 		colorize = "#FFFFFF",
 		bgcolor = "#FF0000",
@@ -44,7 +44,7 @@ function broken_tools.fix_tool(toolstack)
 	assert(toolstack:is_known() and not toolstack:is_empty())
 	local definition = toolstack:get_definition()
 	assert(definition.type == "tool")
-	item_description_monoid.monoid:del_change(toolstack, "broken_tool")
+	description_monoids.monoid:del_change(toolstack, "broken_tool")
 	toolcap_monoids.dig_speed:del_change(toolstack, "broken_tool")
 	toolcap_monoids.damage:del_change(toolstack, "broken_tool")
 	return toolstack
@@ -87,7 +87,7 @@ end
 
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 	local tool = puncher:get_wielded_item()
-	if item_description_monoid.monoid:value(tool, "broken_tool") then
+	if description_monoids.monoid:value(tool, "broken_tool") then
 		if tool:get_wear() == 65535 then
 			play_breaking_sound(tool, puncher)
 		else

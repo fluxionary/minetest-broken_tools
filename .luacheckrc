@@ -650,9 +650,9 @@ stds.broken_tools = {
 		"broken_tools",
 	},
 	read_globals = {
+		"description_monoids",
 		"fmod",
 		"futil",
-		"item_description_monoid",
 		"item_monoids",
 		"toolcap_monoids",
 	},

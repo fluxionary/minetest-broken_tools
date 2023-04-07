@@ -17,7 +17,16 @@ function broken_tools.break_tool(toolstack, user)
 	assert(definition.type == "tool")
 	local short_description = futil.get_safe_short_description(toolstack)
 	toolstack:set_wear(65535)
-	item_description_monoid.monoid:add_change(toolstack, minetest.colorize("#ff0000", S("BROKEN")), "broken_tool")
+	item_description_monoid.description:add_change(toolstack, {
+		prefix = S("BROKEN"),
+		colorize = "#FFFFFF",
+		bgcolor = "#FF0000",
+	}, "broken_tool")
+	item_description_monoid.short_description:add_change(toolstack, {
+		prefix = S("BROKEN"),
+		colorize = "#FFFFFF",
+		bgcolor = "#FF0000",
+	}, "broken_tool")
 	toolcap_monoids.dig_speed:add_change(toolstack, "disable", "broken_tool")
 	toolcap_monoids.damage:add_change(toolstack, "disable", "broken_tool")
 	if user then

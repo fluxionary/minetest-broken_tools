@@ -44,7 +44,8 @@ function broken_tools.fix_tool(toolstack)
 	assert(toolstack:is_known() and not toolstack:is_empty())
 	local definition = toolstack:get_definition()
 	assert(definition.type == "tool")
-	description_monoids.monoid:del_change(toolstack, "broken_tool")
+	description_monoids.description:del_change(toolstack, "broken_tool")
+	description_monoids.short_description:del_change(toolstack, "broken_tool")
 	toolcap_monoids.dig_speed:del_change(toolstack, "broken_tool")
 	toolcap_monoids.damage:del_change(toolstack, "broken_tool")
 	return toolstack
@@ -87,7 +88,7 @@ end
 
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 	local tool = puncher:get_wielded_item()
-	if description_monoids.monoid:value(tool, "broken_tool") then
+	if description_monoids.description:value(tool, "broken_tool") then
 		if tool:get_wear() == 65535 then
 			play_breaking_sound(tool, puncher)
 		else

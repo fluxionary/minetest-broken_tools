@@ -53,7 +53,7 @@ function broken_tools.register(name)
 	local groups = table.copy(def.groups or {})
 	groups.breakable_tool = 1
 	local after_use = def.after_use
-	minetest.override_item(name, {
+	local new_def = {
 		groups = groups,
 		after_use = function(itemstack, user, node, digparams)
 			local broken = false
@@ -77,7 +77,41 @@ function broken_tools.register(name)
 
 			return itemstack
 		end,
-	})
+	}
+	local on_use = def.on_use
+	if on_use then
+		function new_def.on_use(itemstack, user, pointed_thing)
+			local rv = on_use(ItemStack(itemstack), user, pointed_thing)
+			if rv and rv:is_empty() then
+				return broken_tools.break_tool(itemstack, user)
+			else
+				return rv
+			end
+		end
+	end
+	local on_place = def.on_place
+	if on_place then
+		function new_def.on_place(itemstack, placer, pointed_thing)
+			local rv = on_place(ItemStack(itemstack), placer, pointed_thing)
+			if rv and rv:is_empty() then
+				return broken_tools.break_tool(itemstack, placer)
+			else
+				return rv
+			end
+		end
+	end
+	local on_secondary_use = def.on_secondary_use
+	if on_secondary_use then
+		function new_def.on_secondary_use(itemstack, user, pointed_thing)
+			local rv = on_secondary_use(ItemStack(itemstack), user, pointed_thing)
+			if rv and rv:is_empty() then
+				return broken_tools.break_tool(itemstack, user)
+			else
+				return rv
+			end
+		end
+	end
+	minetest.override_item(name, new_def)
 end
 
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)

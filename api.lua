@@ -103,21 +103,21 @@ function broken_tools.register(name)
 			end
 		end
 	end
-	local on_place = def.on_place
-	if on_place then
-		function new_def.on_place(itemstack, placer, pointed_thing)
-			if broken_tools.is_broken(itemstack) then
-				play_breaking_sound(itemstack, placer)
-				return
-			end
-			local rv = on_place(ItemStack(itemstack), placer, pointed_thing)
-			if rv and rv:is_empty() then
-				return broken_tools.break_tool(itemstack, placer)
-			else
-				return rv
-			end
-		end
-	end
+	--local on_place = def.on_place
+	--if on_place then
+	--	function new_def.on_place(itemstack, placer, pointed_thing)
+	--		if broken_tools.is_broken(itemstack) then
+	--			play_breaking_sound(itemstack, placer)
+	--			return
+	--		end
+	--		local rv = on_place(ItemStack(itemstack), placer, pointed_thing)
+	--		if rv and rv:is_empty() then
+	--			return broken_tools.break_tool(itemstack, placer)
+	--		else
+	--			return rv
+	--		end
+	--	end
+	--end
 	local on_secondary_use = def.on_secondary_use
 	if on_secondary_use then
 		function new_def.on_secondary_use(itemstack, user, pointed_thing)

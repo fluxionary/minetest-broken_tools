@@ -12,7 +12,7 @@ local function play_breaking_sound(tool, user)
 end
 
 function broken_tools.is_broken(toolstack)
-	return toolcap_monoids.dig_speed:value(toolstack, "broken_tool") == "disable"
+	return description_monoids.description:value(toolstack, "broken_tool")
 end
 
 function broken_tools.break_tool(toolstack, user)
@@ -103,6 +103,7 @@ function broken_tools.register(name)
 			end
 		end
 	end
+	-- this is disabled until we can figure out how to handle anvils and itemframes etc. (core.item_place)
 	--local on_place = def.on_place
 	--if on_place then
 	--	function new_def.on_place(itemstack, placer, pointed_thing)

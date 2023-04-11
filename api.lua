@@ -11,8 +11,15 @@ local function play_breaking_sound(tool, user)
 	}, true)
 end
 
+function broken_tools.is_broken(toolstack)
+	return toolcap_monoids.dig_speed:value(toolstack, "broken_tool") == "disable"
+end
+
 function broken_tools.break_tool(toolstack, user)
 	assert(toolstack:is_known() and not toolstack:is_empty())
+	if broken_tools.is_broken(toolstack) then
+		return toolstack
+	end
 	local definition = toolstack:get_definition()
 	assert(definition.type == "tool")
 	local short_description = futil.get_safe_short_description(toolstack)
@@ -37,6 +44,9 @@ end
 
 function broken_tools.fix_tool(toolstack)
 	assert(toolstack:is_known() and not toolstack:is_empty())
+	if not broken_tools.is_broken(toolstack) then
+		return toolstack
+	end
 	local definition = toolstack:get_definition()
 	assert(definition.type == "tool")
 	description_monoids.description:del_change(toolstack, "broken_tool")
@@ -46,7 +56,7 @@ function broken_tools.fix_tool(toolstack)
 end
 
 function broken_tools.register(name)
-	local def = minetest.registered_items[name]
+	local def = minetest.registered_tools[name]
 	if not def then
 		error(f("attempt to register unknown tool %s", name))
 	end
@@ -81,6 +91,10 @@ function broken_tools.register(name)
 	local on_use = def.on_use
 	if on_use then
 		function new_def.on_use(itemstack, user, pointed_thing)
+			if broken_tools.is_broken(itemstack) then
+				play_breaking_sound(itemstack, user)
+				return
+			end
 			local rv = on_use(ItemStack(itemstack), user, pointed_thing)
 			if rv and rv:is_empty() then
 				return broken_tools.break_tool(itemstack, user)
@@ -92,6 +106,10 @@ function broken_tools.register(name)
 	local on_place = def.on_place
 	if on_place then
 		function new_def.on_place(itemstack, placer, pointed_thing)
+			if broken_tools.is_broken(itemstack) then
+				play_breaking_sound(itemstack, placer)
+				return
+			end
 			local rv = on_place(ItemStack(itemstack), placer, pointed_thing)
 			if rv and rv:is_empty() then
 				return broken_tools.break_tool(itemstack, placer)
@@ -103,6 +121,10 @@ function broken_tools.register(name)
 	local on_secondary_use = def.on_secondary_use
 	if on_secondary_use then
 		function new_def.on_secondary_use(itemstack, user, pointed_thing)
+			if broken_tools.is_broken(itemstack) then
+				play_breaking_sound(itemstack, user)
+				return
+			end
 			local rv = on_secondary_use(ItemStack(itemstack), user, pointed_thing)
 			if rv and rv:is_empty() then
 				return broken_tools.break_tool(itemstack, user)
@@ -116,10 +138,11 @@ end
 
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 	local tool = puncher:get_wielded_item()
-	if description_monoids.description:value(tool, "broken_tool") then
+	if broken_tools.is_broken(tool) then
 		if tool:get_wear() == 65535 then
 			play_breaking_sound(tool, puncher)
 		else
+			-- in case the player fixed it somehow
 			broken_tools.fix_tool(tool)
 		end
 	end

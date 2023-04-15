@@ -103,22 +103,37 @@ function broken_tools.register(name)
 			end
 		end
 	end
-	-- this is disabled until we can figure out how to handle anvils and itemframes etc. (core.item_place)
-	--local on_place = def.on_place
-	--if on_place then
-	--	function new_def.on_place(itemstack, placer, pointed_thing)
-	--		if broken_tools.is_broken(itemstack) then
-	--			play_breaking_sound(itemstack, placer)
-	--			return
-	--		end
-	--		local rv = on_place(ItemStack(itemstack), placer, pointed_thing)
-	--		if rv and rv:is_empty() then
-	--			return broken_tools.break_tool(itemstack, placer)
-	--		else
-	--			return rv
-	--		end
-	--	end
-	--end
+	local on_place = def.on_place
+	if on_place then
+		function new_def.on_place(itemstack, placer, pointed_thing, param2)
+			if pointed_thing.type == "node" and placer and not placer:get_player_control().sneak then
+				local pos = pointed_thing.under
+				local n = minetest.get_node(pos)
+				local nn = n.name
+				local node_def = minetest.registered_nodes[nn] or {}
+				if node_def.on_rightclick then
+					return node_def.on_rightclick(pos, n, placer, itemstack, pointed_thing) or itemstack, nil
+				end
+			end
+
+			if broken_tools.is_broken(itemstack) then
+				play_breaking_sound(itemstack, placer)
+				return
+			end
+
+			if itemstack:get_definition().type == "node" then
+				return minetest.item_place_node(itemstack, placer, pointed_thing, param2)
+			end
+
+			local rv = on_place(ItemStack(itemstack), placer, pointed_thing)
+
+			if rv and rv:is_empty() then
+				return broken_tools.break_tool(itemstack, placer)
+			else
+				return rv
+			end
+		end
+	end
 	local on_secondary_use = def.on_secondary_use
 	if on_secondary_use then
 		function new_def.on_secondary_use(itemstack, user, pointed_thing)

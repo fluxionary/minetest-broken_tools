@@ -152,6 +152,12 @@ function broken_tools.register(name)
 	minetest.override_item(name, new_def)
 end
 
+broken_tools.blacklisted_patterns = {}
+
+function broken_tools.blacklist(pattern)
+	broken_tools.blacklisted_patterns[#broken_tools.blacklisted_patterns + 1] = pattern
+end
+
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 	local tool = puncher:get_wielded_item()
 	if broken_tools.is_broken(tool) then

@@ -1,0 +1,2 @@
+# comma delimited list of blacklist patterns
+broken_tools:blacklist_patterns (blacklist patterns) string default:.*_wood,default:.*_stone
